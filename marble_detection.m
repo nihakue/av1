@@ -9,9 +9,10 @@ Im3 = double(imread('SEQ1/3.jpg', 'jpg'));
 % Imback = (Im1 + Im2 + Im3) / 3;
 
 show_centroids = 1;
-show_circum = 1;
+show_circum = 0;
 show_images = 1;
 show_groups = 0;
+sub_thresh = 15;
 
 Imback = Im1;
 [MR, MC, Dim] = size(Imback);
@@ -19,19 +20,19 @@ fore = zeros(MR,MC);
 
 for i = 4 : 71
     %Load the image
-
-    Imwork = double(imread(['SEQ1/', int2str(i), '.jpg'], 'jpg'));
-
+    Im = imread(['SEQ1/', int2str(i), '.jpg'], 'jpg');
+    Imwork = double(Im);
     
-
-    
-    fore = (abs(Imwork(:,:,1)-Imback(:,:,1)) > 20) ...
-         | (abs(Imwork(:,:,2) - Imback(:,:,2)) > 20) ...
-         | (abs(Imwork(:,:,3) - Imback(:,:,3)) > 20);
- 
-    forem = bwmorph(fore, 'fill');
-    forem = bwmorph(forem, 'erode', 2);
-    labeled = bwlabel(forem, 4);
+    %Background subtraction
+    fore = (abs(Imwork(:,:,1)-Imback(:,:,1)) > sub_thresh) ...
+         | (abs(Imwork(:,:,2) - Imback(:,:,2)) > sub_thresh) ...
+         | (abs(Imwork(:,:,3) - Imback(:,:,3)) > sub_thresh);
+     
+     
+    %Apply image morphology to clean up the groups
+    forem = bwmorph(fore, 'erode', 4);
+    forem = bwmorph(forem, 'dilate', 4);
+    labeled = bwlabel(forem, 8);
     stats = regionprops(labeled, ['basic']);
     [N, W] = size(stats);
 
@@ -40,6 +41,7 @@ for i = 4 : 71
     radii = zeros(size(stats), 1);
 
     for i = 1 : N
+        %Filter out non-marble sized groups
         if stats(i).Area > 100
             if stats(i).Area < 1000
                 stats(i).Area
@@ -50,22 +52,22 @@ for i = 4 : 71
     end
     figure(1)
     clf
-    if show_images
-        imshow(Imwork);
+    if show_images > 0
+        imshow(Im);
         hold on
-        show_groups = 0;
-    end
-    if show_groups
-        imshow(forem)
-        hold on
-    end
-    if show_centroids
-        centroids_r = centroids(:,1);
-        centroids_c = centroids(:,2);
-        plot(centroids_r, centroids_c, 'g.');
+    else if show_groups
+            imshow(forem)
+            hold on
+        end
     end
     
-    if show_circum
+    if show_centroids > 0
+        centroids_r = centroids(:,1);
+        centroids_c = centroids(:,2);
+        plot(centroids_r, centroids_c, 'r.');
+    end
+    
+    if show_circum > 0
        for i = 1 : size(radii)
            radius = radii(i);
            if radius == 0
@@ -73,8 +75,8 @@ for i = 4 : 71
            end
            for c = -0.97 * radius: radius/20 : 0.97 * radius
                r = sqrt(radius^2-c^2);
-               plot(centroids(i, 1) + c, centroids(i, 2) + r, 'r.');
-               plot(centroids(i, 1) + c, centroids(i, 2) - r, 'r.');
+               plot(centroids(i, 1) + c, centroids(i, 2) + r, 'g.');
+               plot(centroids(i, 1) + c, centroids(i, 2) - r, 'g.');
            end
        end
     end

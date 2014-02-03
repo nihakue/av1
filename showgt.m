@@ -11,7 +11,7 @@
 % Type return after each frame to afvance to the next
 function showgt(allfignum,tmpfignum,numframes)
     
-imagefile_name='/afs/inf.ed.ac.uk/user/s13/s1365736/Projects/AV/SEQ1/'; % full path to groundtruth
+imagefile_name='/afs/inf.ed.ac.uk/user/s13/s1365736/Projects/AV/av1/SEQ1/'; % full path to groundtruth
 gtfile_name = 'gtSeq1.mat';
 file_format='.jpg';
 load(gtfile_name) % load ground truth
