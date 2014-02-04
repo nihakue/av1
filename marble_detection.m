@@ -9,12 +9,16 @@ Im3 = double(imread('SEQ1/3.jpg', 'jpg'));
 % Imback = (Im1 + Im2 + Im3) / 3;
 
 show_centroids = 1;
-show_circum = 0;
-show_images = 1;
-show_groups = 0;
-sub_thresh = 15;
+show_circum = 1;
+show_images = 0;
+show_groups = 1;
 
-Imback = Im1;
+sub_thresh = 18;
+
+orange = [255/255 204/255 0];
+
+Imback = double(Im1);
+ImbackChroma = chroma(Imback);
 [MR, MC, Dim] = size(Imback);
 fore = zeros(MR,MC);
 state = repmat(struct('x', -1, 'y', -1, 'area', -1, 'radius', -1, 'rg_distr', -1), 18, 71);
@@ -22,25 +26,31 @@ state = repmat(struct('x', -1, 'y', -1, 'area', -1, 'radius', -1, 'rg_distr', -1
 
 
 for i = 4 : 71
-    %Load the image
+    %Load the frame
     Im = imread(['SEQ1/', int2str(i), '.jpg'], 'jpg');
     Imwork = double(Im);
+    ImworkChroma = chroma(Imwork);
+    
     
     %Background subtraction creates binary image
-    fore = (abs(Imwork(:,:,1)-Imback(:,:,1)) > sub_thresh) ...
-         | (abs(Imwork(:,:,2) - Imback(:,:,2)) > sub_thresh) ...
-         | (abs(Imwork(:,:,3) - Imback(:,:,3)) > sub_thresh);
+%     fore = (abs(Imwork(:,:,1)-Imback(:,:,1)) > sub_thresh) ...
+%          | (abs(Imwork(:,:,2) - Imback(:,:,2)) > sub_thresh) ...
+%          | (abs(Imwork(:,:,3) - Imback(:,:,3)) > sub_thresh);
+     
+     fore = (((ImworkChroma(:,:,3)./ImbackChroma(:,:,3)) < 0.8) ...
+         | ((ImworkChroma(:,:,3)./ImbackChroma(:,:,3)) > 1.2));
      
      
     %Apply image morphology to clean up the groups
-    forem = bwmorph(fore, 'erode', 4);
-    forem = bwmorph(forem, 'dilate', 4);
+    forem = fore;
+%     forem = bwmorph(fore, 'erode', 4);
+%     forem = bwmorph(forem, 'dilate', 4);
     labeled = bwlabel(forem, 8);
     stats = regionprops(labeled, ['basic']);
     [N, W] = size(stats);
     
-    centroids = zeros(size(stats), 2);
-    radii = zeros(size(stats), 1);
+    centroids = zeros(length(stats), 2);
+    radii = zeros(length(stats));
 
     for j = 1 : N
         %Filter out non-marble sized groups
@@ -76,10 +86,10 @@ for i = 4 : 71
            end
            for c = -0.97 * radius: radius/20 : 0.97 * radius
                r = sqrt(radius^2-c^2);
-               plot(centroids(k, 1) + c, centroids(k, 2) + r, 'g.');
-               plot(centroids(k, 1) + c, centroids(k, 2) - r, 'g.');
+               plot(centroids(k, 1) + c, centroids(k, 2) + r, 'Color', 'cyan', 'Marker', '.');
+               plot(centroids(k, 1) + c, centroids(k, 2) - r, 'Color', 'cyan', 'Marker', '.');
            end
        end
     end
-        pause(0.3);
+%         pause(0.3);
 end
