@@ -1,6 +1,8 @@
 Im1 = double(imread('SEQ1/1.jpg', 'jpg'));
 Im2 = double(imread('SEQ1/2.jpg', 'jpg'));
 Im3 = double(imread('SEQ1/3.jpg', 'jpg'));
+%Import mask image and inverse it becuase weird imread.
+mask = ~imread('mask.bmp', 'bmp');
 
 % Im1_c = chroma(Im1);
 % Im2_c = chroma(Im2);
@@ -9,8 +11,8 @@ Im3 = double(imread('SEQ1/3.jpg', 'jpg'));
 % Imback = (Im1 + Im2 + Im3) / 3;
 
 show_centroids = 1;
-show_circum = 1;
-show_images = 0;
+show_circum = 0;
+show_images = 1;
 show_groups = 1;
 
 sub_thresh = 18;
@@ -38,11 +40,14 @@ for i = 4 : 71
 %          | (abs(Imwork(:,:,3) - Imback(:,:,3)) > sub_thresh);
      
      fore = (((ImworkChroma(:,:,3)./ImbackChroma(:,:,3)) < 0.8) ...
-         | ((ImworkChroma(:,:,3)./ImbackChroma(:,:,3)) > 1.2));
+         | ((ImworkChroma(:,:,3)./ImbackChroma(:,:,3)) > 1.2))...
+         .* mask;
      
      
     %Apply image morphology to clean up the groups
     forem = fore;
+    forem = bwmorph(fore, 'dilate', 2);
+    forem = bwmorph(forem, 'fill');
 %     forem = bwmorph(fore, 'erode', 4);
 %     forem = bwmorph(forem, 'dilate', 4);
     labeled = bwlabel(forem, 8);
@@ -54,8 +59,8 @@ for i = 4 : 71
 
     for j = 1 : N
         %Filter out non-marble sized groups
-        if stats(j).Area > 100
-            if stats(j).Area < 1000
+        if stats(j).Area > 60
+            if stats(j).Area < 1500
                 centroids(j,:) = stats(j).Centroid;
                 radii(j) = sqrt(stats(j).Area/pi);
             end
