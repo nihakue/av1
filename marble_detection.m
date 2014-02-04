@@ -17,13 +17,16 @@ sub_thresh = 15;
 Imback = Im1;
 [MR, MC, Dim] = size(Imback);
 fore = zeros(MR,MC);
+state = repmat(struct('x', -1, 'y', -1, 'area', -1, 'radius', -1, 'rg_distr', -1), 18, 71);
+
+
 
 for i = 4 : 71
     %Load the image
     Im = imread(['SEQ1/', int2str(i), '.jpg'], 'jpg');
     Imwork = double(Im);
     
-    %Background subtraction
+    %Background subtraction creates binary image
     fore = (abs(Imwork(:,:,1)-Imback(:,:,1)) > sub_thresh) ...
          | (abs(Imwork(:,:,2) - Imback(:,:,2)) > sub_thresh) ...
          | (abs(Imwork(:,:,3) - Imback(:,:,3)) > sub_thresh);
@@ -35,18 +38,16 @@ for i = 4 : 71
     labeled = bwlabel(forem, 8);
     stats = regionprops(labeled, ['basic']);
     [N, W] = size(stats);
-
-    balls = stats;
+    
     centroids = zeros(size(stats), 2);
     radii = zeros(size(stats), 1);
 
-    for i = 1 : N
+    for j = 1 : N
         %Filter out non-marble sized groups
-        if stats(i).Area > 100
-            if stats(i).Area < 1000
-                stats(i).Area
-                centroids(i,:) = stats(i).Centroid;
-                radii(i) = sqrt(stats(i).Area/pi);
+        if stats(j).Area > 100
+            if stats(j).Area < 1000
+                centroids(j,:) = stats(j).Centroid;
+                radii(j) = sqrt(stats(j).Area/pi);
             end
         end
     end
@@ -68,15 +69,15 @@ for i = 4 : 71
     end
     
     if show_circum > 0
-       for i = 1 : size(radii)
-           radius = radii(i);
+       for k = 1 : size(radii)
+           radius = radii(k);
            if radius == 0
                continue
            end
            for c = -0.97 * radius: radius/20 : 0.97 * radius
                r = sqrt(radius^2-c^2);
-               plot(centroids(i, 1) + c, centroids(i, 2) + r, 'g.');
-               plot(centroids(i, 1) + c, centroids(i, 2) - r, 'g.');
+               plot(centroids(k, 1) + c, centroids(k, 2) + r, 'g.');
+               plot(centroids(k, 1) + c, centroids(k, 2) - r, 'g.');
            end
        end
     end
