@@ -41,6 +41,8 @@ for i = 4 : 71
     
     centroids = zeros(size(stats), 2);
     radii = zeros(size(stats), 1);
+    
+    
 
     for j = 1 : N
         %Filter out non-marble sized groups

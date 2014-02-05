@@ -9,7 +9,7 @@ Im3 = double(imread('SEQ1/3.jpg', 'jpg'));
 % Imback = (Im1 + Im2 + Im3) / 3;
 
 show_centroids = 1;
-show_circum = 0;
+show_circum = 1;
 show_images = 1;
 show_groups = 0;
 sub_thresh = 15;
@@ -41,6 +41,8 @@ for i = 4 : 71
     
     centroids = zeros(size(stats), 2);
     radii = zeros(size(stats), 1);
+    
+    
 
     for j = 1 : N
         %Filter out non-marble sized groups
