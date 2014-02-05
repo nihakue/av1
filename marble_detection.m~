@@ -23,7 +23,7 @@ Imback = double(Im1);
 ImbackChroma = chroma(Imback);
 [MR, MC, Dim] = size(Imback);
 fore = zeros(MR,MC);
-state = repmat(struct('x', -1, 'y', -1, 'area', -1, 'radius', -1, 'rg_distr', -1), 18, 71);
+state = repmat(struct('x', -1, 'y', -1, 'area', -1, 'radius', -1, 'r', -1, 'g', -1, 'b', -1), 18, 71);
 
 
 
@@ -32,6 +32,10 @@ for i = 4 : 71
     Im = imread(['SEQ1/', int2str(i), '.jpg'], 'jpg');
     Imwork = double(Im);
     ImworkChroma = chroma(Imwork);
+    
+    rIm = Im(:,:,1);
+    gIm = Im(:,:,2);
+    bIm = Im(:,:,3);
     
     
     %Background subtraction creates binary image
@@ -56,13 +60,26 @@ for i = 4 : 71
     
     centroids = zeros(size(stats), 2);
     radii = zeros(size(stats), 1);
+    
+    
+ %   centroids = zeros(length(stats), 2);
+ %   radii = zeros(length(stats));
 
+    c = 0;
     for j = 1 : N
         %Filter out non-marble sized groups
         if stats(j).Area > 60
             if stats(j).Area < 1500
+                c = c+1;
                 centroids(j,:) = stats(j).Centroid;
                 radii(j) = sqrt(stats(j).Area/pi);
+                
+                state(c,i).x = centroids(j,1);
+                state(c,i).y = centroids(j,2);
+                state(c,i).radius = radii(j);
+                
+                val = labeled(centroids(j));
+                rIm(labeled(labeled=val))
             end
         end
     end
