@@ -58,8 +58,8 @@ for i = 4 : 71
     stats = regionprops(labeled, ['basic']);
     [N, W] = size(stats);
     
-    centroids = zeros(size(stats), 2);
-    radii = zeros(size(stats), 1);
+    centroids = zeros(length(stats), 2);
+    radii = zeros(length(stats), 1);
     
     
  %   centroids = zeros(length(stats), 2);
@@ -69,7 +69,7 @@ for i = 4 : 71
     for j = 1 : N
         %Filter out non-marble sized groups
         if stats(j).Area > 60
-            if stats(j).Area < 1500
+            if stats(j).Area < 1000
                 c = c+1;
                 centroids(j,:) = stats(j).Centroid;
                 radii(j) = sqrt(stats(j).Area/pi);
@@ -77,9 +77,14 @@ for i = 4 : 71
                 state(c,i).x = centroids(j,1);
                 state(c,i).y = centroids(j,2);
                 state(c,i).radius = radii(j);
+                state(c,i).area = stats(j).Area;
                 
-                val = labeled(centroids(j));
-                rIm(labeled(labeled=val))
+                index = floor(centroids(j,:));
+                val = labeled(index(2),index(1));
+                % getting the avergae r,g,b values for each marble in each frame 
+                state(c,i).r = sum(rIm(labeled==val))/length(rIm(labeled==val));
+                state(c,i).g = sum(gIm(labeled==val))/length(gIm(labeled==val));
+                state(c,i).b = sum(bIm(labeled==val))/length(bIm(labeled==val));
             end
         end
     end
@@ -110,8 +115,8 @@ for i = 4 : 71
                r = sqrt(radius^2-c^2);
                plot(centroids(k, 1) + c, centroids(k, 2) + r, 'Color', 'cyan', 'Marker', '.');
                plot(centroids(k, 1) + c, centroids(k, 2) - r, 'Color', 'cyan', 'Marker', '.');
-           end
+          end
        end
     end
-%         pause(0.3);
+         pause(0.3);
 end

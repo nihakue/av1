@@ -12,7 +12,7 @@ mask = ~imread('mask.bmp', 'bmp');
 
 show_centroids = 1;
 show_circum = 1;
-show_images = 1;
+show_images = 0;
 show_groups = 1;
 
 sub_thresh = 18;
@@ -64,12 +64,11 @@ for i = 4 : 71
     
  %   centroids = zeros(length(stats), 2);
  %   radii = zeros(length(stats));
-
     c = 0;
     for j = 1 : N
         %Filter out non-marble sized groups
-        if stats(j).Area > 60
-            if stats(j).Area < 1500
+        if stats(j).Area > 200
+            if stats(j).Area < 800
                 c = c+1;
                 centroids(j,:) = stats(j).Centroid;
                 radii(j) = sqrt(stats(j).Area/pi);
@@ -78,10 +77,9 @@ for i = 4 : 71
                 state(c,i).y = centroids(j,2);
                 state(c,i).radius = radii(j);
                 state(c,i).area = stats(j).Area;
-                
                 index = floor(centroids(j,:));
                 val = labeled(index(2),index(1));
-                
+                % getting the avergae r,g,b values for each marble in each frame 
                 state(c,i).r = sum(rIm(labeled==val))/length(rIm(labeled==val));
                 state(c,i).g = sum(gIm(labeled==val))/length(gIm(labeled==val));
                 state(c,i).b = sum(bIm(labeled==val))/length(bIm(labeled==val));
@@ -115,8 +113,8 @@ for i = 4 : 71
                r = sqrt(radius^2-c^2);
                plot(centroids(k, 1) + c, centroids(k, 2) + r, 'Color', 'cyan', 'Marker', '.');
                plot(centroids(k, 1) + c, centroids(k, 2) - r, 'Color', 'cyan', 'Marker', '.');
-           end
+          end
        end
     end
-%         pause(0.3);
+         pause(0.1);
 end
