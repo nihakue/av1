@@ -11,10 +11,10 @@ mask = ~imread('mask.bmp', 'bmp');
 % Imback = (Im1 + Im2 + Im3) / 3;
 
 show_centroids = 1;
-show_circum = 1;
-show_images = 0;
+show_circum = 0;
+show_images = 1;
 show_groups = 1;
-show_bb = 0;
+show_bb = 1;
 
 sub_thresh = 18;
 
@@ -28,7 +28,7 @@ state = repmat(struct('x', -1, 'y', -1, 'area', -1, 'radius', -1, 'rg_distr', -1
 
 
 
-for i = 4 : 71
+for i = 6 : 71
     %Load the frame
     Im = imread(['SEQ1/', int2str(i), '.jpg'], 'jpg');
     Imwork = double(Im);
@@ -40,7 +40,7 @@ for i = 4 : 71
 %          | (abs(Imwork(:,:,2) - Imback(:,:,2)) > sub_thresh) ...
 %          | (abs(Imwork(:,:,3) - Imback(:,:,3)) > sub_thresh);
      
-     fore = (((ImworkChroma(:,:,3)./ImbackChroma(:,:,3)) < 0.8) ...
+     fore = (((ImworkChroma(:,:,3)./ImbackChroma(:,:,3)) < 0.87) ...
          | ((ImworkChroma(:,:,3)./ImbackChroma(:,:,3)) > 1.2))...
          .* mask;
      
@@ -49,7 +49,6 @@ for i = 4 : 71
     forem = fore;
     forem = bwmorph(fore, 'dilate', 4);
     forem = bwmorph(forem, 'fill');
-%     forem = bwmorph(fore, 'close', 4);
 %     forem = bwmorph(forem, 'dilate', 4);
     labeled = bwlabel(forem, 8);
     stats = regionprops(labeled, ['basic']);
@@ -60,13 +59,13 @@ for i = 4 : 71
     for j = 1 : N
         curr_area = stats(j).Area;
         %Filter out non-marble sized groups
-        if curr_area > 60
-            if curr_area < 900
-                %Do nothing yet
+        if curr_area > 80
+            if curr_area < 1080
+                %Single marble, do nothing
             %We may have a situation where multiple marbles are
             %conjoined.    radii(j) = sqrt(curr_area/pi);
             %Case where number of marbles == 3
-            elseif curr_area < 1700
+            elseif curr_area < 2000
                 %first we find the pixels for the object in question
                 [conj_row, conj_col] = find(labeled == j);
                 %then we calculate the kmean clusters for the case where
@@ -74,22 +73,69 @@ for i = 4 : 71
                 km = kmeans([conj_row, conj_col], 2);
                 %then we change their labels in the original bw matrix
                 for k = 1 : length(conj_row)
-                    labeled(conj_row(k), conj_col(k)) = km(k) + N;
+                    if km(k) == 1
+                        labeled(conj_row(k), conj_col(k)) = j;
+                    else
+                        labeled(conj_row(k), conj_col(k)) = N + 1;
+                    end
                 end
+                N = N + 1;
             %Case where number of marbles == 3
-            elseif curr_area < 2400
+            elseif curr_area < 2600
                 %same as 2 case, just more clusters
                 [conj_row, conj_col] = find(labeled == j);
                 km = kmeans([conj_row, conj_col], 3);
                 for k = 1: length(conj_row)
-                    labeled(conj_row(k), conj_col(k)) = km(k) + N;
+                    if km(k) == 1
+                        labeled(conj_row(k), conj_col(k)) = j;
+                    elseif km(k) == 2
+                        labeled(conj_row(k), conj_col(k)) = N + 1;
+                    elseif km(k) == 3
+                        labeled(conj_row(k), conj_col(k)) = N + 2;
+                    end
                 end
+                N = N + 2;
+            %Case where number of marbles == 4
+            elseif curr_area < 3000
+            %same as 3 case, just more clusters (4)
+            [conj_row, conj_col] = find(labeled == j);
+            km = kmeans([conj_row, conj_col], 4);
+            for k = 1: length(conj_row)
+                if km(k) == 1
+                    labeled(conj_row(k), conj_col(k)) = j;
+                elseif km(k) == 2
+                    labeled(conj_row(k), conj_col(k)) = N + 1;
+                elseif km(k) == 3
+                    labeled(conj_row(k), conj_col(k)) = N + 2;
+                elseif km(k) == 4
+                    labeled(conj_row(k), conj_col(k)) = N + 3;  
+                end
+            end
+            N = N + 3;
+            %Case where number of marbles == 5
+            elseif curr_area < 4000
+            %same as 4 case, just more clusters (5)
+            [conj_row, conj_col] = find(labeled == j);
+            km = kmeans([conj_row, conj_col], 5);
+            for k = 1: length(conj_row)
+                if km(k) == 1
+                    labeled(conj_row(k), conj_col(k)) = j;
+                elseif km(k) == 2
+                    labeled(conj_row(k), conj_col(k)) = N + 1;
+                elseif km(k) == 3
+                    labeled(conj_row(k), conj_col(k)) = N + 2;
+                elseif km(k) == 4
+                    labeled(conj_row(k), conj_col(k)) = N + 3;  
+                elseif km(k) == 5
+                    labeled(conj_row(k), conj_col(k)) = N + 4;
+                end
+            end
+            N = N + 4;
             end
         end
     end
     
     stats = regionprops(labeled, ['basic']);
-    [N, W] = size(stats);
     centroids = zeros(length(stats), 2);
     radii = zeros(length(stats));
     
@@ -133,7 +179,6 @@ for i = 4 : 71
             rectangle('Position', stats(b).BoundingBox, 'EdgeColor', 'w')
         end
     end
-    
         pause(0.3);
         
 end
