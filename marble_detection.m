@@ -11,9 +11,10 @@ mask = ~imread('mask.bmp', 'bmp');
 % Imback = (Im1 + Im2 + Im3) / 3;
 
 show_centroids = 1;
-show_circum = 0;
-show_images = 1;
+show_circum = 1;
+show_images = 0;
 show_groups = 1;
+show_bb = 0;
 
 sub_thresh = 18;
 
@@ -46,26 +47,57 @@ for i = 4 : 71
      
     %Apply image morphology to clean up the groups
     forem = fore;
-    forem = bwmorph(fore, 'dilate', 2);
+    forem = bwmorph(fore, 'dilate', 4);
     forem = bwmorph(forem, 'fill');
-%     forem = bwmorph(fore, 'erode', 4);
+%     forem = bwmorph(fore, 'close', 4);
 %     forem = bwmorph(forem, 'dilate', 4);
     labeled = bwlabel(forem, 8);
     stats = regionprops(labeled, ['basic']);
     [N, W] = size(stats);
     
-    centroids = zeros(length(stats), 2);
-    radii = zeros(length(stats));
+    
 
     for j = 1 : N
+        curr_area = stats(j).Area;
         %Filter out non-marble sized groups
-        if stats(j).Area > 60
-            if stats(j).Area < 1500
-                centroids(j,:) = stats(j).Centroid;
-                radii(j) = sqrt(stats(j).Area/pi);
+        if curr_area > 60
+            if curr_area < 900
+                %Do nothing yet
+            %We may have a situation where multiple marbles are
+            %conjoined.    radii(j) = sqrt(curr_area/pi);
+            %Case where number of marbles == 3
+            elseif curr_area < 1700
+                %first we find the pixels for the object in question
+                [conj_row, conj_col] = find(labeled == j);
+                %then we calculate the kmean clusters for the case where
+                %there are 2 marbles
+                km = kmeans([conj_row, conj_col], 2);
+                %then we change their labels in the original bw matrix
+                for k = 1 : length(conj_row)
+                    labeled(conj_row(k), conj_col(k)) = km(k) + N;
+                end
+            %Case where number of marbles == 3
+            elseif curr_area < 2400
+                %same as 2 case, just more clusters
+                [conj_row, conj_col] = find(labeled == j);
+                km = kmeans([conj_row, conj_col], 3);
+                for k = 1: length(conj_row)
+                    labeled(conj_row(k), conj_col(k)) = km(k) + N;
+                end
             end
         end
     end
+    
+    stats = regionprops(labeled, ['basic']);
+    [N, W] = size(stats);
+    centroids = zeros(length(stats), 2);
+    radii = zeros(length(stats));
+    
+    for j = 1 : N
+        centroids(j,:) = stats(j).Centroid;
+        radii(j) = sqrt(stats(j).Area/pi);
+    end
+    
     figure(1)
     clf
     if show_images > 0
@@ -96,5 +128,12 @@ for i = 4 : 71
            end
        end
     end
-%         pause(0.3);
+    if show_bb > 0
+        for b = 1 : length(stats)
+            rectangle('Position', stats(b).BoundingBox, 'EdgeColor', 'w')
+        end
+    end
+    
+        pause(0.3);
+        
 end
