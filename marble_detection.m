@@ -3,6 +3,7 @@ Im2 = double(imread('SEQ1/2.jpg', 'jpg'));
 Im3 = double(imread('SEQ1/3.jpg', 'jpg'));
 %Import mask image and inverse it becuase weird imread.
 mask = ~imread('mask.bmp', 'bmp');
+allcolors=['wrgbykmc'];
 
 % Im1_c = chroma(Im1);
 % Im2_c = chroma(Im2);
@@ -11,10 +12,10 @@ mask = ~imread('mask.bmp', 'bmp');
 % Imback = (Im1 + Im2 + Im3) / 3;
 
 show_centroids = 1;
-show_circum = 0;
+show_circum = 1;
 show_images = 1;
 show_groups = 1;
-show_bb = 1;
+show_bb = 0;
 
 sub_thresh = 18;
 
@@ -49,8 +50,7 @@ for i = 6 : 71
     forem = fore;
     forem = bwmorph(fore, 'dilate', 4);
     forem = bwmorph(forem, 'fill');
-%     forem = bwmorph(forem, 'dilate', 4);
-    labeled = bwlabel(forem, 8);
+    labeled = bwlabel(forem, 4);
     stats = regionprops(labeled, ['basic']);
     [N, W] = size(stats);
     
@@ -167,11 +167,12 @@ for i = 6 : 71
            if radius == 0
                continue
            end
-           for c = -0.97 * radius: radius/20 : 0.97 * radius
-               r = sqrt(radius^2-c^2);
-               plot(centroids(k, 1) + c, centroids(k, 2) + r, 'Color', 'cyan', 'Marker', '.');
-               plot(centroids(k, 1) + c, centroids(k, 2) - r, 'Color', 'cyan', 'Marker', '.');
-           end
+           circle(centroids(k, 1), centroids(k, 2), radius, allcolors(mod(k, 8) + 1));
+%            for c = -0.97 * radius: radius/20 : 0.97 * radius
+%                r = sqrt(radius^2-c^2);
+%                plot(centroids(k, 1) + c, centroids(k, 2) + r, 'Color', 'cyan', 'Marker', '.');
+%                plot(centroids(k, 1) + c, centroids(k, 2) - r, 'Color', 'cyan', 'Marker', '.');
+%            end
        end
     end
     if show_bb > 0
