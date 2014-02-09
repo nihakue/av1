@@ -136,8 +136,8 @@ for i = 6 : 71
     end
     
     stats = regionprops(labeled, ['basic']);
-    centroids = zeros(length(stats), 2);
-    radii = zeros(length(stats));
+    centroids = zeros(18, 2);
+    radii = zeros(18);
     
     for j = 1 : N
         centroids(j,:) = stats(j).Centroid;
@@ -162,12 +162,12 @@ for i = 6 : 71
     end
     
     if show_circum > 0
-       for k = 1 : size(radii)
+       for k = 1 : 18
            radius = radii(k);
            if radius == 0
                continue
            end
-           circle(centroids(k, 1), centroids(k, 2), radius, allcolors(mod(k, 8) + 1));
+           circle(centroids(k, 1), centroids(k, 2), radius/1.5, allcolors(mod(k, 8) + 1));
 %            for c = -0.97 * radius: radius/20 : 0.97 * radius
 %                r = sqrt(radius^2-c^2);
 %                plot(centroids(k, 1) + c, centroids(k, 2) + r, 'Color', 'cyan', 'Marker', '.');
