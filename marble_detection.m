@@ -135,7 +135,7 @@ for i = 6 : 71
         end
     end
     
-    stats = regionprops(labeled, ['basic']);
+    stats = regionprops(labeled, 'basic', 'PixelIdxList', 'PixelList');
     centroids = zeros(18, 2);
     radii = zeros(18);
     
@@ -180,6 +180,5 @@ for i = 6 : 71
             rectangle('Position', stats(b).BoundingBox, 'EdgeColor', 'w')
         end
     end
-        pause(0.3);
         
 end

@@ -7,6 +7,20 @@ function [ b_distance ] = bhat_distance( rg1, rg2 )
 x_vals = 64;
 % dx = x_vals(2) - x_vals(1);
 
+if sum(sum(rg1)) ~= 1
+    %not a probability distribution
+    rg1 = rg1 ./ sum(sum(rg1));
+end
+if sum(sum(rg1)) ~= 1
+    %not a probability distribtution
+    rg2 = rg2 ./ sum(sum(rg2));
+end
+
+b_distance = -log(sum(sum(sqrt(rg1 .* rg2))));
+
+return;
+    
+
 % %First we flatten the red green pixel arrays to a 1d array
 % 
 r1 = rg1(:,1);
@@ -36,7 +50,7 @@ g2_h = g2_h ./ (sum(g2_h));
 
 %Compare using the Bhattycharrya formula
 %First for the reds
-b_distance = -log(sum(sqrt((r1_h .* g1_h) .* (r2_h .* g2_h))));
+% b_distance = -log(sum(sqrt((r1_h .* g1_h) .* (r2_h .* g2_h))));
 % bhat_greens = -log(sum(sqrt(g1_h .* g2_h)));
 
 return;
