@@ -167,7 +167,7 @@ for i = 6 : 71
            if radius == 0
                continue
            end
-           circle(centroids(k, 1), centroids(k, 2), radius, allcolors(mod(k, 8) + 1));
+           circle(centroids(k, 1), centroids(k, 2), radius/1.5, allcolors(mod(k, 8) + 1));
 %            for c = -0.97 * radius: radius/20 : 0.97 * radius
 %                r = sqrt(radius^2-c^2);
 %                plot(centroids(k, 1) + c, centroids(k, 2) + r, 'Color', 'cyan', 'Marker', '.');

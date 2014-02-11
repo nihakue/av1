@@ -13,7 +13,7 @@ rg2_hist = hist3(rg2, [bins bins]);
 rg1_hist = rg1_hist ./ sum(sum(rg1_hist));
 rg2_hist = rg2_hist ./ sum(sum(rg2_hist));
 
-
+%Compute the Bhattacharyya distace
 b_distance = -log(sum(sum(sqrt(rg1_hist .* rg2_hist))));
 
 return;
