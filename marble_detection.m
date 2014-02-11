@@ -25,7 +25,7 @@ Imback = double(Im1);
 ImbackChroma = chroma(Imback);
 [MR, MC, Dim] = size(Imback);
 fore = zeros(MR,MC);
-state = repmat(struct('x', -1, 'y', -1, 'area', -1, 'radius', -1, 'rg_distr', -1), 18, 71);
+state = repmat(struct('centroid', -1, 'rg_distr', -1), 18, 71);
 
 
 
