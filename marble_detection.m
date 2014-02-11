@@ -14,7 +14,7 @@ allcolors=['wrgbykmc'];
 show_centroids = 1;
 show_circum = 1;
 show_images = 1;
-show_groups = 1;
+show_groups = 0;
 show_bb = 0;
 
 sub_thresh = 18;
