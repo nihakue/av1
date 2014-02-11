@@ -180,5 +180,5 @@ for i = 6 : 71
             rectangle('Position', stats(b).BoundingBox, 'EdgeColor', 'w')
         end
     end
-        
+        pause(0.3);
 end
