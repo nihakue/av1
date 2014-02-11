@@ -25,15 +25,22 @@ Imback = double(Im1);
 ImbackChroma = chroma(Imback);
 [MR, MC, Dim] = size(Imback);
 fore = zeros(MR,MC);
-state = repmat(struct('x', -1, 'y', -1, 'area', -1, 'radius', -1, 'rg_distr', -1), 18, 71);
+all_states = repmat(struct('centroid', -1, 'rg_distr', -1), 18, 71);
 
 
 
-for i = 6 : 71
+for i = 1 : 71
     %Load the frame
     Im = imread(['SEQ1/', int2str(i), '.jpg'], 'jpg');
     Imwork = double(Im);
     ImworkChroma = chroma(Imwork);
+    
+    %seperate the reds and greens for linear indexing
+    reds = ImworkChroma(:,:,1);
+    greens = ImworkChroma(:,:,2);
+    
+    %Get the state for current frame
+    curr_state = all_states(:, i);
     
     
     %Background subtraction creates binary image
@@ -51,11 +58,11 @@ for i = 6 : 71
     forem = bwmorph(fore, 'dilate', 4);
     forem = bwmorph(forem, 'fill');
     labeled = bwlabel(forem, 4);
-    stats = regionprops(labeled, ['basic']);
+    stats = regionprops(labeled, 'Centroid', 'Area', 'PixelIdxList', 'BoundingBox');
     [N, W] = size(stats);
     
     
-
+%Use K means clustering to differentiate between clumps of marbles
     for j = 1 : N
         curr_area = stats(j).Area;
         %Filter out non-marble sized groups
@@ -135,15 +142,21 @@ for i = 6 : 71
         end
     end
     
-    stats = regionprops(labeled, 'basic', 'PixelIdxList', 'PixelList');
+    stats = regionprops(labeled, 'Centroid', 'Area', 'PixelIdxList', 'BoundingBox');
     centroids = zeros(18, 2);
     radii = zeros(18);
     
+    %Now that marbles have been refined with k means, we can assign the
+    %state vector.
     for j = 1 : N
         centroids(j,:) = stats(j).Centroid;
         radii(j) = sqrt(stats(j).Area/pi);
+        curr_state(j).centroid = stats(j).Centroid;
+        curr_state(j).rg_distr = [reds(stats(j).PixelIdxList) greens(stats(j).PixelIdxList)];
     end
     
+    all_states(:, i) = curr_state;
+    %Drawing functions
     figure(1)
     clf
     if show_images > 0
@@ -168,11 +181,6 @@ for i = 6 : 71
                continue
            end
            circle(centroids(k, 1), centroids(k, 2), radius/1.5, allcolors(mod(k, 8) + 1));
-%            for c = -0.97 * radius: radius/20 : 0.97 * radius
-%                r = sqrt(radius^2-c^2);
-%                plot(centroids(k, 1) + c, centroids(k, 2) + r, 'Color', 'cyan', 'Marker', '.');
-%                plot(centroids(k, 1) + c, centroids(k, 2) - r, 'Color', 'cyan', 'Marker', '.');
-%            end
        end
     end
     if show_bb > 0
@@ -182,3 +190,5 @@ for i = 6 : 71
     end
         pause(0.3);
 end
+
+save('all_states.mat', 'all_states');
