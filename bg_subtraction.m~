@@ -1,2 +1,0 @@
-ImBack = double(imread('SEQ1/1.jpg','jpg'));
-
