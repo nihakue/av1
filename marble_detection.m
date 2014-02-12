@@ -1,11 +1,16 @@
-function [ratio, distance] = marble_detection (threshold, gain)
+function [ratio, distance] = marble_detection (threshold, gain, headless)
+%Default arguments
+if nargin == 0
+    headless = true;
+    threshold = 1088.9;
+    gain = .8444;
+end
 
 %Load model background image
 Im1 = double(imread('SEQ1/1.jpg', 'jpg'));
 
-%Import mask image and inverse it becuase weird imread.
+%Import mask image and invert it becuase weird imread.
 mask = ~imread('mask.bmp', 'bmp');
-allcolors=['wrgbykmc'];
 
 % Im1_c = chroma(Im1);
 % Im2_c = chroma(Im2);
@@ -13,13 +18,22 @@ allcolors=['wrgbykmc'];
 % 
 % Imback = (Im1 + Im2 + Im3) / 3;
 
-show_centroids = 0;
+show_centroids = 1;
 show_circum = 0;
-show_images = 0;
+show_images = 1;
 show_groups = 0;
 show_bb = 0;
+pause_length = 0.3;
 
-sub_thresh = 18;
+if headless
+    show_centroids = 1;
+    show_circum = 0;
+    show_images = 1;
+    show_groups = 0;
+    show_bb = 0;
+    pause_length = 0;
+end
+
 
 orange = [255/255 204/255 0];
 
@@ -27,7 +41,7 @@ Imback = double(Im1);
 ImbackChroma = chroma(Imback);
 [MR, MC, Dim] = size(Imback);
 fore = zeros(MR,MC);
-all_states = repmat(struct('row', -1, 'col', -1, 'rg_distr', -1), 18, 71);
+all_states = repmat(struct('row', -1, 'col', -1, 'rg_distr', -1, 'id', -1), 18, 71);
 
 
 
@@ -72,7 +86,8 @@ for i = 1 : 71
             if curr_area < threshold
                 %Single marble, do nothing
             %We may have a situation where multiple marbles are
-            %conjoined.    radii(j) = sqrt(curr_area/pi);
+            %conjoined.
+            
             %Case where number of marbles == 3
             elseif curr_area < (threshold * gain * 2)
                 %first we find the pixels for the object in question
@@ -153,47 +168,51 @@ for i = 1 : 71
     for j = 1 : N
         centroids(j,:) = stats(j).Centroid;
         radii(j) = sqrt(stats(j).Area/pi);
-        curr_state(j).row = stats(j).Centroid(1);
-        curr_state(j).col = stats(j).Centroid(2);
+        %Because of matlab row/column and x/y confusion, provisionaly swap
+        %place of centroid indices row/col to col/row
+        curr_state(j).col = stats(j).Centroid(1);
+        curr_state(j).row = stats(j).Centroid(2);
         curr_state(j).rg_distr = [reds(stats(j).PixelIdxList) greens(stats(j).PixelIdxList)];
     end
     
     all_states(:, i) = curr_state;
     %Drawing functions
-    if show_images > 0 | show_groups > 0
+    if ~headless
         figure(1)
         clf
-    end
-    if show_images > 0
-        imshow(Im);
-        hold on
-    else if show_groups
-            imshow(forem)
+        if show_images > 0
+            imshow(Im);
             hold on
+        else if show_groups
+                imshow(forem)
+                hold on
+            end
         end
-    end
-    
-    if show_centroids > 0
-        centroids_r = centroids(:,1);
-        centroids_c = centroids(:,2);
-        plot(centroids_r, centroids_c, 'r.');
-    end
-    
-    if show_circum > 0
-       for k = 1 : 18
-           radius = radii(k);
-           if radius == 0
-               continue
+
+        if show_centroids > 0
+            centroids_r = centroids(:,1);
+            centroids_c = centroids(:,2);
+            plot(centroids_r, centroids_c, 'r.');
+        end
+
+        if show_circum > 0
+           for k = 1 : 18
+               radius = radii(k);
+               if radius == 0
+                   continue
+               end
+               circle(centroids(k, 1), centroids(k, 2), radius/1.5, 'b');
            end
-           circle(centroids(k, 1), centroids(k, 2), radius/1.5, allcolors(mod(k, 8) + 1));
-       end
-    end
-    if show_bb > 0
-        for b = 1 : length(stats)
-            rectangle('Position', stats(b).BoundingBox, 'EdgeColor', 'w')
+        end
+        if show_bb > 0
+            for b = 1 : length(stats)
+                rectangle('Position', stats(b).BoundingBox, 'EdgeColor', 'w')
+            end
         end
     end
+    pause(pause_length);
 end
 
 [ratio, distance] = performance(all_states);
+save('all_states.mat', 'all_states');
 end
