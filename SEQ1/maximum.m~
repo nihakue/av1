@@ -1,0 +1,17 @@
+function maximum(a1,a2,a3)
+%MAXIMUM Summary of this function goes here
+%   Detailed explanation goes here
+
+commands
+max=a1;
+if (a1>max)
+    max=a1
+end
+if (a2>max)
+    max=a2
+end
+if(a3>max)
+    max=a3
+end
+end
+
