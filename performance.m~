@@ -5,6 +5,7 @@ function performance(all_states)
     detected_count = 0;
     count_total = 0;
     total_dis=0;
+    mean_dis=0;
     right_coming_frames=gt.new_marbles_comingFromRight;
  
     for marblenum=1:size(right_coming_frames,2)      % loop over the individual marbles coming from the right
