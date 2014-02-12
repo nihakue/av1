@@ -1,4 +1,4 @@
-function performance(all_states)
+function [ratio, mean_dis]=performance(all_states)
 %PERFORMANCE Summary of this function goes here
 %   Detailed explanation goes here
     gt=load('gtSeq1.mat');
@@ -14,16 +14,20 @@ function performance(all_states)
             for p = 1 : length(frameList)
                 gt_m_array=[right_coming_frames(marblenum).row_of_centers(p) right_coming_frames(marblenum).col_of_centers(p)];
                     
-                    for k =1:18                     
-                       dt_m_array=all_states(k,frameList(p)).centroid;
+                    for k =1:18 
+                       
+                       dt_m_array=[all_states(k,frameList(p)).row all_states(k,frameList(p)).col];
                        dis_m_centroid=norm(dt_m_array-gt_m_array);
-                       total_dis=total_dis+dis_m_centroid;
+                      
                        if dis_m_centroid<=10
+                           
                            detected_count = detected_count+1;
+                           total_dis=total_dis+dis_m_centroid;
                        end
-                          count_total = count_total+1;
+                      
                     end
             end
+            count_total=count_total+length(frameList);
         end
         
     end
@@ -37,20 +41,25 @@ function performance(all_states)
           for p = 1 : length(frameList)
                 gt_m_array=[left_coming_frames(marblenum).row_of_centers(p) left_coming_frames(marblenum).col_of_centers(p)];
                     for k =1:18
-                       dt_m_array=all_states(k,frameList(p)).centroid;
+         
+                       dt_m_array=[all_states(k,frameList(p)).row all_states(k,frameList(p)).col];
                        dis_m_centroid=norm(dt_m_array-gt_m_array);
-                       total_dis=total_dis+dis_m_centroid;
+            
                        if dis_m_centroid<=10
                            detected_count = detected_count+1;
+                           total_dis=total_dis+dis_m_centroid;
                        end
-                          count_total = count_total+1;
+                         
                     end
-           end
+          end
+           count_total=count_total+length(frameList);
+          
         end
         
     end
     
     ratio=detected_count/count_total;
     mean_dis=total_dis/detected_count;
-    return ;
+    total_dis
+    detected_count
 end
