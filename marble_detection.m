@@ -25,7 +25,7 @@ Imback = double(Im1);
 ImbackChroma = chroma(Imback);
 [MR, MC, Dim] = size(Imback);
 fore = zeros(MR,MC);
-all_states = repmat(struct('centroid', -1, 'rg_distr', -1), 18, 71);
+all_states = repmat(struct('row', -1, 'col', -1, 'rg_distr', -1), 18, 71);
 
 
 
@@ -151,7 +151,8 @@ for i = 1 : 71
     for j = 1 : N
         centroids(j,:) = stats(j).Centroid;
         radii(j) = sqrt(stats(j).Area/pi);
-        curr_state(j).centroid = stats(j).Centroid;
+        curr_state(j).row = stats(j).Centroid(1);
+        curr_state(j).col = stats(j).Centroid(2);
         curr_state(j).rg_distr = [reds(stats(j).PixelIdxList) greens(stats(j).PixelIdxList)];
     end
     
