@@ -14,7 +14,7 @@ allcolors=['wrgbykmc'];
 show_centroids = 1;
 show_circum = 1;
 show_images = 1;
-show_groups = 1;
+show_groups = 0;
 show_bb = 0;
 
 sub_thresh = 18;
@@ -72,7 +72,7 @@ for i = 1 : 71
             %We may have a situation where multiple marbles are
             %conjoined.    radii(j) = sqrt(curr_area/pi);
             %Case where number of marbles == 3
-            elseif curr_area < 2000
+            elseif curr_area < 2600
                 %first we find the pixels for the object in question
                 [conj_row, conj_col] = find(labeled == j);
                 %then we calculate the kmean clusters for the case where
@@ -88,7 +88,7 @@ for i = 1 : 71
                 end
                 N = N + 1;
             %Case where number of marbles == 3
-            elseif curr_area < 2600
+            elseif curr_area < 3000
                 %same as 2 case, just more clusters
                 [conj_row, conj_col] = find(labeled == j);
                 km = kmeans([conj_row, conj_col], 3);
@@ -103,7 +103,7 @@ for i = 1 : 71
                 end
                 N = N + 2;
             %Case where number of marbles == 4
-            elseif curr_area < 3000
+            elseif curr_area < 4000
             %same as 3 case, just more clusters (4)
             [conj_row, conj_col] = find(labeled == j);
             km = kmeans([conj_row, conj_col], 4);
@@ -120,7 +120,7 @@ for i = 1 : 71
             end
             N = N + 3;
             %Case where number of marbles == 5
-            elseif curr_area < 4000
+            elseif curr_area < 5000
             %same as 4 case, just more clusters (5)
             [conj_row, conj_col] = find(labeled == j);
             km = kmeans([conj_row, conj_col], 5);
@@ -189,7 +189,7 @@ for i = 1 : 71
             rectangle('Position', stats(b).BoundingBox, 'EdgeColor', 'w')
         end
     end
-        pause(0.3);
+    
+    pause(1);
 end
-
 save('all_states.mat', 'all_states');

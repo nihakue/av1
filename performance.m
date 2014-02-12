@@ -23,6 +23,7 @@ function [ratio, mean_dis]=performance(all_states)
                            
                            detected_count = detected_count+1;
                            total_dis=total_dis+dis_m_centroid;
+                           break;
                        end
                       
                     end
@@ -48,6 +49,7 @@ function [ratio, mean_dis]=performance(all_states)
                        if dis_m_centroid<=10
                            detected_count = detected_count+1;
                            total_dis=total_dis+dis_m_centroid;
+                           break;
                        end
                          
                     end
@@ -62,4 +64,5 @@ function [ratio, mean_dis]=performance(all_states)
     mean_dis=total_dis/detected_count;
     total_dis
     detected_count
+    count_total
 end
