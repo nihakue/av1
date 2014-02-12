@@ -25,7 +25,11 @@ Imback = double(Im1);
 ImbackChroma = chroma(Imback);
 [MR, MC, Dim] = size(Imback);
 fore = zeros(MR,MC);
+<<<<<<< HEAD
 all_states = repmat(struct('row', -1, 'col', -1, 'rg_distr', -1), 18, 71);
+=======
+all_states = repmat(struct('centroid', -1, 'rg_distr', -1), 18, 71);
+>>>>>>> 2d19b0a25d1591b0479a99e1c9e2f9c92e1d6002
 
 
 
@@ -72,7 +76,7 @@ for i = 1 : 71
             %We may have a situation where multiple marbles are
             %conjoined.    radii(j) = sqrt(curr_area/pi);
             %Case where number of marbles == 3
-            elseif curr_area < 2600
+            elseif curr_area < 2000
                 %first we find the pixels for the object in question
                 [conj_row, conj_col] = find(labeled == j);
                 %then we calculate the kmean clusters for the case where
@@ -88,7 +92,7 @@ for i = 1 : 71
                 end
                 N = N + 1;
             %Case where number of marbles == 3
-            elseif curr_area < 3000
+            elseif curr_area < 2600
                 %same as 2 case, just more clusters
                 [conj_row, conj_col] = find(labeled == j);
                 km = kmeans([conj_row, conj_col], 3);
@@ -103,7 +107,7 @@ for i = 1 : 71
                 end
                 N = N + 2;
             %Case where number of marbles == 4
-            elseif curr_area < 4000
+            elseif curr_area < 3000
             %same as 3 case, just more clusters (4)
             [conj_row, conj_col] = find(labeled == j);
             km = kmeans([conj_row, conj_col], 4);
@@ -120,7 +124,7 @@ for i = 1 : 71
             end
             N = N + 3;
             %Case where number of marbles == 5
-            elseif curr_area < 5000
+            elseif curr_area < 4000
             %same as 4 case, just more clusters (5)
             [conj_row, conj_col] = find(labeled == j);
             km = kmeans([conj_row, conj_col], 5);
@@ -189,8 +193,7 @@ for i = 1 : 71
             rectangle('Position', stats(b).BoundingBox, 'EdgeColor', 'w')
         end
     end
-    
-    pause(0.3);
+        pause(0.3);
+end
 
 save('all_states.mat', 'all_states');
-end
