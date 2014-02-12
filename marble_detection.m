@@ -1,6 +1,8 @@
+function [ratio, distance] = marble_detection (threshold, gain)
+
+%Load model background image
 Im1 = double(imread('SEQ1/1.jpg', 'jpg'));
-Im2 = double(imread('SEQ1/2.jpg', 'jpg'));
-Im3 = double(imread('SEQ1/3.jpg', 'jpg'));
+
 %Import mask image and inverse it becuase weird imread.
 mask = ~imread('mask.bmp', 'bmp');
 allcolors=['wrgbykmc'];
@@ -11,10 +13,10 @@ allcolors=['wrgbykmc'];
 % 
 % Imback = (Im1 + Im2 + Im3) / 3;
 
-show_centroids = 1;
-show_circum = 1;
-show_images = 1;
-show_groups = 1;
+show_centroids = 0;
+show_circum = 0;
+show_images = 0;
+show_groups = 0;
 show_bb = 0;
 
 sub_thresh = 18;
@@ -67,12 +69,12 @@ for i = 1 : 71
         curr_area = stats(j).Area;
         %Filter out non-marble sized groups
         if curr_area > 80
-            if curr_area < 1080
+            if curr_area < threshold
                 %Single marble, do nothing
             %We may have a situation where multiple marbles are
             %conjoined.    radii(j) = sqrt(curr_area/pi);
             %Case where number of marbles == 3
-            elseif curr_area < 2000
+            elseif curr_area < (threshold * gain * 2)
                 %first we find the pixels for the object in question
                 [conj_row, conj_col] = find(labeled == j);
                 %then we calculate the kmean clusters for the case where
@@ -88,7 +90,7 @@ for i = 1 : 71
                 end
                 N = N + 1;
             %Case where number of marbles == 3
-            elseif curr_area < 2600
+            elseif curr_area < (threshold * gain * 3)
                 %same as 2 case, just more clusters
                 [conj_row, conj_col] = find(labeled == j);
                 km = kmeans([conj_row, conj_col], 3);
@@ -103,7 +105,7 @@ for i = 1 : 71
                 end
                 N = N + 2;
             %Case where number of marbles == 4
-            elseif curr_area < 3000
+            elseif curr_area < (threshold * gain * 4)
             %same as 3 case, just more clusters (4)
             [conj_row, conj_col] = find(labeled == j);
             km = kmeans([conj_row, conj_col], 4);
@@ -120,7 +122,7 @@ for i = 1 : 71
             end
             N = N + 3;
             %Case where number of marbles == 5
-            elseif curr_area < 4000
+            elseif curr_area < (threshold * gain * 5)
             %same as 4 case, just more clusters (5)
             [conj_row, conj_col] = find(labeled == j);
             km = kmeans([conj_row, conj_col], 5);
@@ -158,8 +160,10 @@ for i = 1 : 71
     
     all_states(:, i) = curr_state;
     %Drawing functions
-    figure(1)
-    clf
+    if show_images > 0 | show_groups > 0
+        figure(1)
+        clf
+    end
     if show_images > 0
         imshow(Im);
         hold on
@@ -189,7 +193,7 @@ for i = 1 : 71
             rectangle('Position', stats(b).BoundingBox, 'EdgeColor', 'w')
         end
     end
-        pause(0.3);
 end
 
-save('all_states.mat', 'all_states');
+[ratio, distance] = performance(all_states);
+end

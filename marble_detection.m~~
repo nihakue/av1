@@ -1,6 +1,6 @@
+%Import background model image
 Im1 = double(imread('SEQ1/1.jpg', 'jpg'));
-Im2 = double(imread('SEQ1/2.jpg', 'jpg'));
-Im3 = double(imread('SEQ1/3.jpg', 'jpg'));
+
 %Import mask image and inverse it becuase weird imread.
 mask = ~imread('mask.bmp', 'bmp');
 
@@ -10,10 +10,10 @@ mask = ~imread('mask.bmp', 'bmp');
 % 
 % Imback = (Im1 + Im2 + Im3) / 3;
 
-show_centroids = 1;
-show_circum = 1;
-show_images = 1;
-show_groups = 1;
+show_centroids = 0;
+show_circum = 0;
+show_images = 0;
+show_groups = 0;
 
 sub_thresh = 18;
 
@@ -27,7 +27,7 @@ state = repmat(struct('x', -1, 'y', -1, 'area', -1, 'radius', -1, 'rg_distr', -1
 
 
 
-for i = 4 : 71
+for i = 2 : 71
     %Load the frame
     Im = imread(['SEQ1/', int2str(i), '.jpg'], 'jpg');
     Imwork = double(Im);
@@ -105,3 +105,4 @@ for i = 4 : 71
     end
 %         pause(0.3);
 end
+
